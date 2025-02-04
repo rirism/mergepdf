@@ -125,6 +125,60 @@
       });
     }
 
+    function displayFiles() {
+        fileList.innerHTML = "";
+        pdfFiles.forEach((file, index) => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("file-item");
+            listItem.draggable = true;
+            listItem.dataset.index = index;
+
+            const fileName = document.createElement("span");
+            fileName.textContent = file.name;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "X";
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.onclick = () => {
+            pdfFiles.splice(index, 1);
+            displayFiles();
+            };
+
+            listItem.appendChild(fileName);
+            listItem.appendChild(deleteBtn);
+            fileList.appendChild(listItem);
+
+            // Drag & Drop functionality
+            listItem.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", index);
+            listItem.classList.add("dragging");
+            });
+
+            listItem.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            });
+
+            listItem.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const draggedIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+            const targetIndex = parseInt(listItem.dataset.index, 10);
+            reorderFiles(draggedIndex, targetIndex);
+            });
+
+            listItem.addEventListener("dragend", () => {
+            listItem.classList.remove("dragging");
+            });
+        });
+        }
+
+    // Function to reorder files in the array and re-render
+    function reorderFiles(fromIndex, toIndex) {
+        if (fromIndex === toIndex) return; // Prevent unnecessary reordering
+        const movedFile = pdfFiles.splice(fromIndex, 1)[0];
+        pdfFiles.splice(toIndex, 0, movedFile);
+        displayFiles(); // Re-render the file list
+        }
+
     mergeBtn.addEventListener("click", async () => {
       if (pdfFiles.length < 2) {
         alert("Please select at least two PDFs.");
