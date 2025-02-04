@@ -17,14 +17,14 @@
       margin-bottom: 10px;
     }
 
-    input[type="file"] {
+    input[type="file"], input[type="text"] {
       margin-bottom: 10px;
     }
 
     #fileList {
       list-style-type: none;
       padding: 0;
-      width: 300px;
+      width: 80%;
     }
 
     .file-item {
@@ -43,7 +43,6 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      max-width: 200px; /* Adjust width as needed */
       display: inline-block;
     }
 
@@ -82,25 +81,25 @@
   <h1>Merge PDF Files</h1>
   <input type="file" id="fileInput" accept="application/pdf" multiple>
   <ul id="fileList"></ul>
+  <input type="text" id="fileName" placeholder="Enter document name">
   <button id="mergeBtn">Merge PDFs</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script>
     const fileInput = document.getElementById("fileInput");
     const fileList = document.getElementById("fileList");
+    const fileNameInput = document.getElementById("fileName");
     const mergeBtn = document.getElementById("mergeBtn");
     let pdfFiles = [];
 
-    // Handle file selection
     fileInput.addEventListener("change", (event) => {
       for (const file of event.target.files) {
         pdfFiles.push(file);
         displayFiles();
       }
-      fileInput.value = ""; // Reset file input
+      fileInput.value = "";
     });
 
-    // Display selected files
     function displayFiles() {
       fileList.innerHTML = "";
       pdfFiles.forEach((file, index) => {
@@ -123,44 +122,16 @@
         listItem.appendChild(fileName);
         listItem.appendChild(deleteBtn);
         fileList.appendChild(listItem);
-
-        // Drag & Drop functionality
-        listItem.addEventListener("dragstart", (e) => {
-          e.dataTransfer.setData("text/plain", index);
-          listItem.classList.add("dragging");
-        });
-
-        listItem.addEventListener("dragover", (e) => {
-          e.preventDefault();
-        });
-
-        listItem.addEventListener("drop", (e) => {
-          e.preventDefault();
-          const draggedIndex = e.dataTransfer.getData("text/plain");
-          const targetIndex = listItem.dataset.index;
-          reorderFiles(draggedIndex, targetIndex);
-        });
-
-        listItem.addEventListener("dragend", () => {
-          listItem.classList.remove("dragging");
-        });
       });
     }
 
-    // Reorder files
-    function reorderFiles(fromIndex, toIndex) {
-      const movedFile = pdfFiles.splice(fromIndex, 1)[0];
-      pdfFiles.splice(toIndex, 0, movedFile);
-      displayFiles();
-    }
-
-    // Merge PDFs
     mergeBtn.addEventListener("click", async () => {
       if (pdfFiles.length < 2) {
         alert("Please select at least two PDFs.");
         return;
       }
 
+      const documentName = fileNameInput.value.trim() || "merged";
       const mergedPdf = await PDFLib.PDFDocument.create();
 
       for (const file of pdfFiles) {
@@ -175,7 +146,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "merged.pdf";
+      a.download = `${documentName}.pdf`;
       a.click();
     });
   </script>
